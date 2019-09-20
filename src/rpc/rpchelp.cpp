@@ -624,6 +624,24 @@ void mc_InitRPCHelpMap04()
             + HelpExampleCli("submitblock", "\"mydata\"")
             + HelpExampleRpc("submitblock", "\"mydata\"")
         ));
+
+    mapHelpStrings.insert(std::make_pair("submitrawblock",
+            "submitrawblock hexdata ( \"jsonparametersobject\" )\n"
+            "\nAttempts to submit new block to network.\n"
+            "The 'jsonparametersobject' parameter is currently ignored.\n"
+            "See https://en.bitcoin.it/wiki/BIP_0022 for full specification.\n"
+
+            "\nArguments\n"
+            "1. hexdata                          (string, required) the hex-encoded block data to submit\n"
+            "2. \"jsonparametersobject\"           (string, optional) object of optional parameters\n"
+            "    {\n"
+            "      \"workid\" : \"id\"               (string, optional) if the server provided a workid, it MUST be included with submissions\n"
+            "    }\n"
+            "\nResult:\n"
+            "\nExamples:\n"
+            + HelpExampleCli("submitrawblock", "\"mydata\"")
+            + HelpExampleRpc("submitrawblock", "\"mydata\"")
+        ));
     
     mapHelpStrings.insert(std::make_pair("addnode",
             "addnode \"node\" \"add\"|\"remove\"|\"onetry\"\n"

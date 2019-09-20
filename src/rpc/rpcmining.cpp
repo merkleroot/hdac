@@ -560,6 +560,57 @@ protected:
     };
 };
 
+Value submitrawblock(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1 || params.size() > 2)
+        throw runtime_error("Help message not found\n");
+
+    CBlock block;
+
+    if (!DecodeHexBlk(block, params[0].get_str()))
+    {
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block decode failed");
+    }
+    uint256 hash = block.GetHash();
+
+    bool fBlockPresent = false;
+    {
+         LOCK(cs_main);    
+         
+        BlockMap::iterator mi = mapBlockIndex.find(hash);
+        if (mi != mapBlockIndex.end()) {
+            CBlockIndex *pindex = mi->second;
+            if (pindex->IsValid(BLOCK_VALID_SCRIPTS))
+                return "duplicate";
+            if (pindex->nStatus & BLOCK_FAILED_MASK)
+                return "duplicate-invalid";
+            // Otherwise, we might only have the header - process the block before returning
+            
+            fBlockPresent=true;
+        }
+        
+    }
+    CValidationState state;
+    submitblock_StateCatcher sc(block.GetHash());
+    RegisterValidationInterface(&sc);
+
+    bool fAccepted = ProcessNewBlock(state, NULL, &block);
+    UnregisterValidationInterface(&sc);
+    
+    if (fBlockPresent)        
+    {
+        if (fAccepted && !sc.found)
+            return "duplicate-inconclusive";
+        return "duplicate";
+    }
+    if (fAccepted)
+    {
+        if (!sc.found)
+            return "inconclusive";
+        state = sc.state;
+    }
+    return BIP22ValidationResult(state);
+}
 
 Value submitblock(const Array& params, bool fHelp)
 {
